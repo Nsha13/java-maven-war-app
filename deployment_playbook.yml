@@ -12,16 +12,29 @@
   tasks:
   - name: Download file from a file path
     ansible.builtin.get_url:
-      url: "{{nexus_url}}/{{repository_type}}/{{group_id}}%2F{{artifact_id}}%2F{{version}}-{{build_number}}%2F{{artifact_id}}-{{version}}-{{ build_number}}.war"
-      dest: /home/ec2-user
+      url: "{{ nexus_url }}/{{ repository_type }}/{{ group_id }}%2F{{ artifact_id }}%2F{{ version }}-{{ build_number }}%2F{{ artifact_id }}-{{ version }}-{{ build_number }}.war"
+      dest: /home/ec2-user/hello-world-war-{{ version }}-{{ build_number }}.war
       username: admin
       password: admin
 
+  - name: Check if the war file exists
+    ansible.builtin.stat:
+      path: /home/ec2-user/hello-world-war-{{ version }}-{{ build_number }}.war
+    register: war_file
+
+  - name: Debug war file stats
+    ansible.builtin.debug:
+      var: war_file
+
   - name: Rename war file
-    ansible.builtin.shell: mv /home/ec2-user/{{group_id}}%2F{{artifact_id}}%2F{{version}}-{{build_number}}%2F{{artifact_id}}-{{version}}-{{ build_number}}.war /home/ec2-user/faangler.war
+    ansible.builtin.shell: mv /home/ec2-user/hello-world-war-{{ version }}-{{ build_number }}.war /home/ec2-user/nisha.war
+    when: war_file.stat.exists
 
   - name: Deploying artifact in webapps
-    ansible.builtin.shell: cp /home/ec2-user/faangler.war /opt/apache-tomcat-9.0.90/webapps/faangler.war
+    ansible.builtin.shell: cp /home/ec2-user/nisha.war /opt/apache-tomcat-9.0.90/webapps/nisha.war
+    when: war_file.stat.exists
 
   - name: remove the artifact
-    ansible.builtin.shell: rm -rf /home/ec2-user/faangler.war
+    ansible.builtin.shell: rm -rf /home/ec2-user/nisha.war
+    when: war_file.stat.exists
+
